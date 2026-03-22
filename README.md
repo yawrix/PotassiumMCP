@@ -2,7 +2,7 @@
 
 **Talk to your AI. It hacks the game.**
 
-PotassiumMCP connects any MCP-compatible AI (VS Code Copilot, Cursor, Claude Desktop) directly to a live Roblox game. 21 built-in tools give your AI the ability to scan, decompile, fuzz, and exploit — all from a chat window. No scripting required.
+PotassiumMCP connects any MCP-compatible AI directly to a live Roblox game. 21 built-in tools give your AI the ability to scan, decompile, fuzz, and exploit — all from a chat window. No scripting required.
 
 You bring the game. The AI does the rest.
 
@@ -22,15 +22,15 @@ The toolkit works with any game. Your AI figures out the game's specific logic, 
 
 ---
 
-## Getting started
-
-### What you need
+## Prerequisites
 
 1. **[Potassium](https://voxlis.net/)** or any sUNC-compatible Roblox executor
 2. **[Node.js](https://nodejs.org)** v18 or newer
-3. **An MCP-compatible AI client** — VS Code with GitHub Copilot, Cursor, or similar
+3. **An MCP-compatible AI client** — VS Code, Cursor, Claude Desktop, Claude Code, Antigravity, or any MCP client
 
-### Step 1: Download and setup
+---
+
+## Quick start
 
 ```bash
 git clone https://github.com/yawrix/PotassiumMCP.git
@@ -39,69 +39,210 @@ node setup.js
 ```
 
 The setup script will:
-- Install dependencies automatically
-- Find your executor's workspace directory
-- Generate the correct MCP config for your editor (VS Code, Cursor, or Claude Desktop)
-- Tell you exactly what to do next
+- Install npm dependencies automatically
+- Auto-detect your executor's workspace directory
+- Generate `.vscode/mcp.json` and `.cursor/mcp.json` with the correct paths
+- Print ready-to-paste configs for Claude Desktop and other clients
 
 **That's the entire install.** One command.
 
-### Step 2: Open in your editor
+---
 
-The repo ships with pre-configured MCP configs:
+## Connect your client
 
-| Editor | Config file | What to do |
-|---|---|---|
-| **VS Code** (Copilot) | `.vscode/mcp.json` | Just open the folder — it works |
-| **Cursor** | `.cursor/mcp.json` | Just open the folder — it works |
-| **Claude Desktop** | — | `setup.js` prints the config to paste |
-| **Codex / Other** | — | `setup.js` prints the config to paste |
+PotassiumMCP uses **stdio transport** — your AI client starts the MCP server process automatically. You just need to tell your client where the server is.
 
-If you ran `node setup.js`, it already configured everything for your editor.
+Most editors use a JSON MCP configuration. Here are the complete configs — you can use them as-is, or copy just the `PotassiumMCP` entry if you have other MCP servers configured.
 
-### Step 3: Run it
+> **Note:** Replace `YOUR_USERNAME` with your actual system username and adjust the path to wherever you cloned PotassiumMCP.
 
-1. Open Roblox and join any game
-2. Paste `agent/dispatcher.lua` into your executor and run it
-3. Open your AI and start chatting. It has full access to the game.
+### JSON configuration
 
-No background processes, no terminal windows. Your AI client launches the MCP server automatically.
-
-<details>
-<summary>Manual config (if setup.js doesn't work)</summary>
-
-**VS Code** → create `.vscode/mcp.json`:
+**Windows:**
 ```json
 {
-  "servers": {
+  "mcpServers": {
     "PotassiumMCP": {
-      "type": "stdio",
       "command": "node",
-      "args": ["bridge/src/mcp-server.js"],
+      "args": ["C:\\Users\\YOUR_USERNAME\\Desktop\\PotassiumMCP\\bridge\\src\\mcp-server.js"],
       "env": {
-        "POTASSIUM_WORKSPACE": "C:\\Users\\YOUR_NAME\\Documents\\Potassium\\workspace"
+        "POTASSIUM_WORKSPACE": "C:\\Users\\YOUR_USERNAME\\Documents\\Potassium\\workspace"
       }
     }
   }
 }
 ```
 
-**Cursor** → Settings → MCP Servers → Add:
+**macOS / Linux:**
 ```json
 {
-  "PotassiumMCP": {
-    "command": "node",
-    "args": ["C:/full/path/to/PotassiumMCP/bridge/src/mcp-server.js"],
-    "env": {
-      "POTASSIUM_WORKSPACE": "C:\\Users\\YOUR_NAME\\Documents\\Potassium\\workspace"
+  "mcpServers": {
+    "PotassiumMCP": {
+      "command": "node",
+      "args": ["/Users/YOUR_USERNAME/Desktop/PotassiumMCP/bridge/src/mcp-server.js"],
+      "env": {
+        "POTASSIUM_WORKSPACE": "/Users/YOUR_USERNAME/Documents/Potassium/workspace"
+      }
     }
   }
 }
 ```
 
-> **Finding your workspace path:** Open your executor, go to Settings, and look for the workspace/files directory. That's what goes in `POTASSIUM_WORKSPACE`.
+> **Important:** VS Code uses `"servers"` as its top-level key instead of `"mcpServers"`. See the VS Code section below.
 
-</details>
+> **Finding your workspace path:** Open your executor (Potassium, etc.), go to Settings, and look for the workspace or files directory. That's what goes in `POTASSIUM_WORKSPACE`. The server will also try to auto-detect it from common install locations.
+
+---
+
+### VS Code (GitHub Copilot)
+
+VS Code supports MCP servers through `.vscode/mcp.json` files. The repo ships with one pre-configured — just open the folder.
+
+> **Important:** VS Code uses `"servers"` as its top-level key, **not** `"mcpServers"`.
+
+#### Option A: Workspace config (recommended)
+
+The repo already includes `.vscode/mcp.json`. If you ran `node setup.js`, it's configured with your absolute paths. Just open the PotassiumMCP folder in VS Code.
+
+#### Option B: Create manually
+
+Create `.vscode/mcp.json` in the project root:
+
+**Windows:**
+```json
+{
+  "servers": {
+    "PotassiumMCP": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["C:\\Users\\YOUR_USERNAME\\Desktop\\PotassiumMCP\\bridge\\src\\mcp-server.js"],
+      "env": {
+        "POTASSIUM_WORKSPACE": "C:\\Users\\YOUR_USERNAME\\Documents\\Potassium\\workspace"
+      }
+    }
+  }
+}
+```
+
+**macOS / Linux:**
+```json
+{
+  "servers": {
+    "PotassiumMCP": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/Users/YOUR_USERNAME/Desktop/PotassiumMCP/bridge/src/mcp-server.js"],
+      "env": {
+        "POTASSIUM_WORKSPACE": "/Users/YOUR_USERNAME/Documents/Potassium/workspace"
+      }
+    }
+  }
+}
+```
+
+#### Option C: Global config
+
+1. Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
+2. Run **MCP: Open User Configuration**
+3. Add the server entry
+
+#### Verify
+
+Open GitHub Copilot Chat, switch to **Agent Mode**, and click the **Tools** icon. Confirm that PotassiumMCP tools appear in the list.
+
+---
+
+### Cursor
+
+Cursor supports MCP servers through its settings UI or by editing config files directly.
+
+The repo ships with `.cursor/mcp.json` pre-configured. If you ran `node setup.js`, it's ready to go.
+
+#### Option A: Project config (recommended)
+
+Open the PotassiumMCP folder in Cursor — the `.cursor/mcp.json` is already there.
+
+#### Option B: Settings UI
+
+1. Go to **File** > **Preferences** > **Cursor Settings**
+2. Select **MCP** in the sidebar
+3. Click **Add new global MCP server**
+4. Paste the JSON configuration from above (use `mcpServers` format)
+
+#### Option C: Global config file
+
+Edit `~/.cursor/mcp.json` and add the PotassiumMCP entry.
+
+#### Verify
+
+In **Cursor Settings** > **MCP**, the server should show a green status indicator.
+
+---
+
+### Claude Desktop
+
+1. Open **Claude** > **Settings...**
+2. Go to the **Developer** tab and click **Edit Config**
+3. Add the JSON configuration from above to `claude_desktop_config.json`
+4. Restart Claude Desktop completely (quit and relaunch)
+5. Click the hammer icon below the chat input to verify PotassiumMCP tools appear
+
+Config file locations:
+- **Windows:** `C:\Users\YOUR_USERNAME\AppData\Roaming\Claude\claude_desktop_config.json`
+- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+---
+
+### Claude Code
+
+Register the MCP server using the `claude mcp add` command:
+
+**Windows:**
+```bash
+claude mcp add PotassiumMCP -- node C:\Users\YOUR_USERNAME\Desktop\PotassiumMCP\bridge\src\mcp-server.js
+```
+
+**macOS / Linux:**
+```bash
+claude mcp add PotassiumMCP -- node /Users/YOUR_USERNAME/Desktop/PotassiumMCP/bridge/src/mcp-server.js
+```
+
+Set the workspace env var:
+```bash
+claude mcp add-env PotassiumMCP POTASSIUM_WORKSPACE /path/to/workspace
+```
+
+Verify by running `/mcp` in Claude Code — you should see `PotassiumMCP: connected`.
+
+---
+
+### Google Antigravity
+
+1. Click the three dots (**…**) at the top of the Agent pane and select **MCP Servers**
+2. Click **Manage MCP Servers** > **View raw config**
+3. Add the JSON configuration from above
+4. Refresh the MCP Servers panel and verify PotassiumMCP tools appear
+
+Config file locations:
+- **macOS:** `~/.gemini/antigravity/mcp_config.json`
+- **Windows:** `C:\Users\YOUR_USERNAME\.gemini\antigravity\mcp_config.json`
+
+---
+
+### Other MCP clients
+
+PotassiumMCP works with **any client that supports stdio transport**. Use the JSON configuration or CLI command from above and consult your client's documentation for where to place it.
+
+---
+
+## Using it
+
+1. Open Roblox and join any game
+2. Paste `agent/dispatcher.lua` into your executor and hit Execute
+3. You'll see the connection banner in the executor console
+4. Open your AI and start chatting — it has access to the game
+
+No background processes, no terminal windows. Your AI client launches the MCP server automatically behind the scenes.
 
 ---
 
@@ -183,6 +324,30 @@ PotassiumMCP works with any executor that supports sUNC (Semi-Unified Naming Con
 
 ---
 
+## Troubleshooting
+
+### Tools not showing up in your AI
+
+1. Make sure the MCP server path in your config is an **absolute path** (not relative)
+2. Check that `node` is in your system PATH — run `node --version` to verify
+3. Restart your editor completely after adding the MCP config
+4. Check your JSON syntax — even a missing comma will silently break the config
+
+### "POTASSIUM_WORKSPACE not found"
+
+The server tries to auto-detect your workspace from common locations. If it fails:
+1. Open your executor and find the workspace/files directory in Settings
+2. Set the `POTASSIUM_WORKSPACE` env var in your MCP config to that path
+3. Both the MCP server and the dispatcher must point to the same directory
+
+### Tools timeout or return nothing
+
+1. Make sure `dispatcher.lua` is running in your executor
+2. Make sure you're in a game (not just on the Roblox home page)
+3. Check the executor console for error messages
+
+---
+
 ## Project structure
 
 ```
@@ -199,6 +364,11 @@ PotassiumMCP/
 │       └── safety.js        # Rate limiting and safety checks
 ├── config/
 │   └── default.json         # Default settings
+├── .vscode/
+│   └── mcp.json             # VS Code MCP config (pre-configured)
+├── .cursor/
+│   └── mcp.json             # Cursor MCP config (pre-configured)
+├── setup.js                 # One-command setup script
 ├── .gitignore
 ├── LICENSE
 └── README.md
