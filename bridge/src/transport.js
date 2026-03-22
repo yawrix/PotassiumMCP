@@ -1,18 +1,20 @@
 /**
- * PotassiumMCP Bridge — File-based IPC Transport
+ * PotassiumMCP — File-based IPC Transport
  * 
- * Communicates with the in-game Lua agent via files in Potassium's
- * workspace directory. The bridge writes commands to `in/` and reads
- * responses from `out/`.
+ * Communicates with the in-game Lua agent via temporary files in
+ * Potassium's workspace directory. Files are automatically cleaned
+ * up after processing — nothing accumulates on disk.
  * 
  * File layout (inside Potassium workspace):
  *   potassiumMCP/in/   ← bridge writes requests here
  *   potassiumMCP/out/  ← agent writes responses here
- *   potassiumMCP/archive/ ← processed files moved here
+ * 
+ * Both directories are auto-cleaned: the agent deletes requests
+ * after reading, and the bridge deletes responses after reading.
  */
 
-import { readFileSync, writeFileSync, readdirSync, renameSync, unlinkSync, existsSync, mkdirSync, watch } from 'node:fs';
-import { join, basename } from 'node:path';
+import { readFileSync, writeFileSync, readdirSync, unlinkSync, existsSync, mkdirSync, watch } from 'node:fs';
+import { join } from 'node:path';
 import { EventEmitter } from 'node:events';
 
 export class FileTransport extends EventEmitter {
@@ -28,7 +30,6 @@ export class FileTransport extends EventEmitter {
     this.baseDir = join(workspaceDir, 'potassiumMCP');
     this.inDir = join(this.baseDir, 'in');
     this.outDir = join(this.baseDir, 'out');
-    this.archiveDir = join(this.baseDir, 'archive');
 
     this.pollIntervalMs = options.pollIntervalMs ?? 250;
     this.useWatcher = options.useWatcher ?? true;
@@ -43,14 +44,13 @@ export class FileTransport extends EventEmitter {
    * Initialize directories and start watching for responses.
    */
   start() {
-    // Ensure directories exist
-    for (const dir of [this.baseDir, this.inDir, this.outDir, this.archiveDir]) {
+    for (const dir of [this.baseDir, this.inDir, this.outDir]) {
       if (!existsSync(dir)) {
         mkdirSync(dir, { recursive: true });
       }
     }
 
-    // Start polling for responses in out/
+    // Start polling for responses
     this._pollTimer = setInterval(() => this._pollResponses(), this.pollIntervalMs);
 
     // Optionally use fs.watch for faster response detection
@@ -81,7 +81,6 @@ export class FileTransport extends EventEmitter {
       this._watcher.close();
       this._watcher = null;
     }
-    // Reject all pending requests
     for (const [id, cb] of this._pendingCallbacks) {
       clearTimeout(cb.timeout);
       cb.reject(new Error('Transport stopped'));
@@ -102,7 +101,6 @@ export class FileTransport extends EventEmitter {
       const filename = `${Date.now()}_${requestId}.json`;
       const filepath = join(this.inDir, filename);
 
-      // Write the request file
       try {
         writeFileSync(filepath, JSON.stringify(envelope, null, 2));
       } catch (err) {
@@ -110,15 +108,12 @@ export class FileTransport extends EventEmitter {
         return;
       }
 
-      // Set up timeout
       const timer = setTimeout(() => {
         this._pendingCallbacks.delete(requestId);
         reject(new Error(`Request ${requestId} timed out after ${timeoutMs}ms`));
       }, timeoutMs);
 
-      // Register callback
       this._pendingCallbacks.set(requestId, { resolve, reject, timeout: timer });
-
       this.emit('request_sent', { request_id: requestId, filename });
     });
   }
@@ -140,15 +135,8 @@ export class FileTransport extends EventEmitter {
           const content = readFileSync(filepath, 'utf-8');
           const msg = JSON.parse(content);
 
-          // Archive the file
-          const archivePath = join(this.archiveDir, file);
-          try {
-            renameSync(filepath, archivePath);
-          } catch {
-            // If rename fails (cross-device), copy + delete
-            writeFileSync(archivePath, content);
-            unlinkSync(filepath);
-          }
+          // Delete the file immediately — no archiving, zero disk buildup
+          try { unlinkSync(filepath); } catch { /* already gone */ }
 
           // Match to pending request
           if (msg.request_id && this._pendingCallbacks.has(msg.request_id)) {
@@ -158,7 +146,6 @@ export class FileTransport extends EventEmitter {
             cb.resolve(msg);
           }
 
-          // Emit for logging/monitoring regardless
           this.emit('response_received', msg);
         } catch (err) {
           this.emit('parse_error', { file, error: err.message });
@@ -169,3 +156,4 @@ export class FileTransport extends EventEmitter {
     }
   }
 }
+

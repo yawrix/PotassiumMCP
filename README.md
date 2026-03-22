@@ -1,43 +1,57 @@
 # 🧪 PotassiumMCP
 
-**AI-powered Roblox game security toolkit.** Connect any MCP-compatible AI assistant directly to a live Roblox game through the Potassium executor. 21 tools for recon, decompilation, exploitation, and testing — no scripting knowledge required.
+**Talk to your AI. It hacks the game.**
 
-> Talk to the AI. It does the hacking.
+PotassiumMCP connects any MCP-compatible AI (VS Code Copilot, Cursor, Claude Desktop) directly to a live Roblox game. 21 built-in tools give your AI the ability to scan, decompile, fuzz, and exploit — all from a chat window. No scripting required.
+
+You bring the game. The AI does the rest.
 
 ---
 
-## ✨ Features
+## What can it do?
 
-- 🔍 **Full Recon** — Scan remotes, search scripts, find hidden instances, detect anti-cheat systems
-- 📖 **Script Decompilation** — Decompile any game script, read upvalues and environment state
-- 🕵️ **Traffic Monitoring** — Spy on all RemoteEvent/Function traffic and HTTP requests in real-time
-- 🎯 **Automated Fuzzing** — Economy-breaking fuzzer tests 13+ malicious payloads with before/after state diffing
-- 🖱️ **UI Simulation** — Fire GUI signals (open shops, click buttons) to satisfy prerequisites before testing remotes
-- ⚡ **Arbitrary Lua Execution** — Run any Lua code in the game context for game-specific attack vectors
-- 🔌 **MCP Native** — Works with any MCP-compatible AI: VS Code Copilot, Cursor, Claude Desktop, etc.
+- **Decompile any script** in the game and read its source code
+- **Scan every remote** the game uses and test them with malicious inputs
+- **Fuzz purchase remotes** with economy-breaking payloads (price = -1, quantity = MAX_INT, etc.)
+- **Simulate clicking buttons** so the game thinks you opened a shop before you fire the remote
+- **Detect anti-cheat systems** before you start testing
+- **Monitor all network traffic** in real-time
+- **Run arbitrary Lua** for anything the built-in tools don't cover
 
-## 🚀 Quick Start
+The toolkit works with any game. Your AI figures out the game's specific logic, finds the vulnerabilities, and tests them — all through conversation.
 
-### Prerequisites
-- [Potassium] Potassiumexecutor (or any sUNC-compatible executor)
-- [Node.js](https://nodejs.org) v18+
-- An MCP-compatible AI client (VS Code w/ GitHub Copilot, Cursor, etc.)
+---
 
-### Setup
+## Getting started
+
+### What you need
+
+1. **[Potassium](https://voxlis.net/)** or any sUNC-compatible Roblox executor
+2. **[Node.js](https://nodejs.org)** v18 or newer
+3. **An MCP-compatible AI client** — VS Code with GitHub Copilot, Cursor, or similar
+
+### Step 1: Download
 
 ```bash
-# 1. Clone the repo
 git clone https://github.com/yawrix/PotassiumMCP.git
-cd potassiumMCP
-
-# 2. Install bridge dependencies
-cd bridge && npm install && cd ..
+cd PotassiumMCP
 ```
 
-### Configure MCP
+### Step 2: Install dependencies
 
-Add to your AI client's MCP configuration (e.g., `.vscode/mcp.json` or `mcp_config.json`):
+```bash
+cd bridge
+npm install
+cd ..
+```
 
+That's it for setup. No global installs, no build step.
+
+### Step 3: Connect your AI
+
+Your AI client needs to know about PotassiumMCP. Add this to your MCP configuration:
+
+**VS Code** → Settings → search "MCP" → Edit in settings.json, or create `.vscode/mcp.json`:
 ```json
 {
   "servers": {
@@ -46,115 +60,150 @@ Add to your AI client's MCP configuration (e.g., `.vscode/mcp.json` or `mcp_conf
       "command": "node",
       "args": ["bridge/src/mcp-server.js"],
       "env": {
-        "POTASSIUM_WORKSPACE": "/path/to/potassiumMCP"
+        "POTASSIUM_WORKSPACE": "C:\\Users\\YOUR_USERNAME\\Documents\\Potassium\\workspace"
       }
     }
   }
 }
 ```
 
-### Run
-
-1. Open Roblox and join your target game
-2. Copy `agent/dispatcher.lua` into Potassium's script editor
-3. Execute the script — you'll see `[PotassiumMCP] Agent started`
-4. Open your AI client and start chatting — it has full access to the game
-
-## 🛠️ Tool Reference
-
-### Recon
-| Tool | Description |
-|---|---|
-| `scan_remotes` | Find all client-visible RemoteEvents and RemoteFunctions |
-| `search_scripts` | Search scripts by name pattern, content, or class |
-| `find_instances` | Deep recursive search across all services + nil-parented instances |
-| `inspect_instance` | Read properties and children of any instance |
-| `get_game_info` | Game ID, Place ID, version, player count, executor info |
-| `get_connections` | List all script connections on a remote or signal |
-
-### Analysis
-| Tool | Description |
-|---|---|
-| `decompile_script` | Full source code decompilation of any script |
-| `get_upvalues` | Read closure upvalues + constants (hidden state) |
-| `get_environment` | Read a running script's environment via getsenv() |
-| `detect_anticheat` | Scan for executor detection, hooks, heartbeat monitors |
-
-### Monitoring
-| Tool | Description |
-|---|---|
-| `spy_remotes` | Hook `__namecall` to capture all FireServer/InvokeServer traffic |
-| `http_spy` | Monitor all HttpService requests (URLs, headers, bodies) |
-| `monitor_changes` | Watch a property for changes over a time window |
-
-### Testing
-| Tool | Description |
-|---|---|
-| `call_remote` | Fire any RemoteEvent/Function with custom arguments |
-| `fuzz_remote` | Automated economy-breaking fuzzer with leaderstats diffing |
-| `execute_probe` | Remote echo test and rate limit checking |
-| `snapshot_state` | Capture full player state (character, backpack, leaderstats) |
-| `snapshot_diff` | Before/after state comparison |
-
-### Exploit
-| Tool | Description |
-|---|---|
-| `fire_signal` | Simulate UI clicks via `firesignal` (open shops, menus, etc.) |
-| `execute_lua` | Run arbitrary Lua with full Potassium API access |
-| `read_log` | Read agent debug logs |
-
-## 🏗️ Architecture
-
-```
-┌─────────────────┐     MCP (stdio)     ┌──────────────────┐     File IPC      ┌──────────────────┐
-│   AI Assistant   │ ◄───────────────► │   MCP Server     │ ◄──────────────► │  In-Game Agent   │
-│  (Copilot, etc.) │                    │  (Node.js)       │                   │  (dispatcher.lua)│
-└─────────────────┘                    └──────────────────┘                   └──────────────────┘
-                                        bridge/src/          potassiumMCP/      agent/dispatcher.lua
-                                        mcp-server.js        ipc_{in,out}/      (runs in Potassium)
+**Cursor** → Settings → MCP Servers → Add:
+```json
+{
+  "PotassiumMCP": {
+    "command": "node",
+    "args": ["C:/full/path/to/PotassiumMCP/bridge/src/mcp-server.js"],
+    "env": {
+      "POTASSIUM_WORKSPACE": "C:\\Users\\YOUR_USERNAME\\Documents\\Potassium\\workspace"
+    }
+  }
+}
 ```
 
-**How it works:**
-1. The AI sends a tool call via MCP
-2. `mcp-server.js` writes a JSON request to the IPC directory
-3. `dispatcher.lua` (running in Roblox) picks up the request, executes it, writes the response
-4. `mcp-server.js` reads the response and returns it to the AI
+> **Finding your workspace path:** Open Potassium, go to Settings, and look for the workspace/files directory. That's what you put in `POTASSIUM_WORKSPACE`. This is where the in-game agent and the MCP server exchange messages — both sides need to point to the same folder.
 
-## 📁 Project Structure
+### Step 4: Run it
+
+1. Open Roblox and join any game
+2. Open `agent/dispatcher.lua` in your executor
+3. Hit Execute — you'll see the connection banner
+4. Open your AI and start chatting. It has full access to the game.
+
+That's it. No background processes, no terminal windows to keep open. Your AI client launches the MCP server automatically behind the scenes.
+
+---
+
+## How it works
 
 ```
-potassiumMCP/
+┌─────────────────┐      MCP        ┌──────────────────┐    File IPC     ┌──────────────────┐
+│   AI Assistant   │ ◄────────────► │   MCP Server     │ ◄────────────► │  In-Game Agent   │
+│  (your editor)   │    (stdio)      │  (Node.js)       │  (temp files)  │  (dispatcher.lua)│
+└─────────────────┘                 └──────────────────┘                └──────────────────┘
+```
+
+1. You ask your AI to do something ("scan all remotes in this game")
+2. Your AI calls a PotassiumMCP tool via MCP
+3. The MCP server writes a small JSON request to a temp file
+4. The dispatcher (running inside Roblox) picks it up, runs the tool, writes the result
+5. The MCP server reads the result and sends it back to your AI
+6. Your AI interprets the result and decides what to do next
+
+**All temp files are automatically deleted after processing.** Nothing accumulates on disk.
+
+---
+
+## All 21 tools
+
+### Recon — figure out what the game has
+| Tool | What it does |
+|---|---|
+| `scan_remotes` | Lists every RemoteEvent and RemoteFunction the game exposes |
+| `search_scripts` | Finds scripts by name or by searching their decompiled source |
+| `find_instances` | Deep search across all services, including hidden/nil-parented objects |
+| `inspect_instance` | Reads properties and children of any instance in the game |
+| `get_game_info` | Game ID, place version, player count, executor info |
+| `get_connections` | Shows what scripts are connected to a remote |
+
+### Analysis — understand the code
+| Tool | What it does |
+|---|---|
+| `decompile_script` | Gets the full source code of any script |
+| `get_upvalues` | Reads hidden variables and constants inside a script's closure |
+| `get_environment` | Reads a running script's globals and imports |
+| `detect_anticheat` | Scans for executor detection, hooks, and integrity checks |
+
+### Monitoring — watch what happens
+| Tool | What it does |
+|---|---|
+| `spy_remotes` | Captures every FireServer/InvokeServer call in real-time |
+| `http_spy` | Logs all HTTP requests the game makes |
+| `monitor_changes` | Watches a specific property and reports when it changes |
+
+### Testing — break things
+| Tool | What it does |
+|---|---|
+| `call_remote` | Fires any remote with whatever arguments you want |
+| `fuzz_remote` | Blasts a remote with 13 malicious payloads and checks if your stats changed |
+| `execute_probe` | Quick echo test and rate limit check on a remote |
+| `snapshot_state` | Captures your full player state (coins, items, everything) |
+| `snapshot_diff` | Takes a before/after snapshot to see what changed |
+
+### Exploit — make it happen
+| Tool | What it does |
+|---|---|
+| `fire_signal` | Simulates clicking UI buttons (open shops, accept dialogs) |
+| `execute_lua` | Runs any Lua code you want inside the game |
+| `read_log` | Reads the agent's debug log |
+
+---
+
+## Compatibility
+
+PotassiumMCP works with any executor that supports sUNC (Semi-Unified Naming Convention):
+
+| Executor | Status |
+|---|---|
+| Potassium | ✅ Fully supported |
+| Any sUNC executor | ✅ Should work |
+
+**Required globals:** `writefile`, `readfile`, `listfiles`, `delfile`, `hookmetamethod`, `firesignal`, `getgenv`, `decompile`, `getsenv`, `getscriptclosure`
+
+---
+
+## Project structure
+
+```
+PotassiumMCP/
 ├── agent/
-│   └── dispatcher.lua        # In-game agent — 21 tools, 1600+ lines
+│   └── dispatcher.lua       # Runs inside Roblox — all 21 tools
 ├── bridge/
+│   ├── package.json
 │   └── src/
-│       ├── mcp-server.js     # MCP server — stdio transport
-│       ├── transport.js      # File-based IPC transport
-│       ├── protocol.js       # JSON-RPC protocol definitions
-│       ├── logger.js         # Audit logging
-│       └── safety.js         # Safety guardrails
-├── app/                      # Electron GUI (optional)
+│       ├── mcp-server.js    # MCP server — your AI talks to this
+│       ├── transport.js     # Handles temp file communication
+│       ├── protocol.js      # Message format definitions
+│       ├── logger.js        # Audit logging
+│       └── safety.js        # Rate limiting and safety checks
 ├── config/
-│   └── default.json          # Default configuration
-├── docs/                     # Architecture documentation
+│   └── default.json         # Default settings
+├── .gitignore
+├── LICENSE
 └── README.md
 ```
 
-## ⚠️ Compatibility
+---
 
-PotassiumMCP works with any executor that supports UNC (Unified Naming Convention):
-- ✅ Potassium
-- ✅ Any executor with: `hookmetamethod`, `firesignal`, `getgenv`, `decompile`, `getsenv`, `getscriptclosure`
+## Adding your own tools
 
-Key requirements: `writefile`/`readfile` for IPC, `hookmetamethod` for remote spy, `firesignal` for UI simulation.
+Every tool has two parts: the Lua implementation and the MCP definition.
 
-## 📜 License
-
-MIT License — see [LICENSE](LICENSE).
-
-## 🤝 Contributing
-
-Pull requests welcome. If you add a new tool:
-1. Add the Lua implementation in `agent/dispatcher.lua`
-2. Add the MCP definition with Zod schema in `bridge/src/mcp-server.js`
+1. Write your tool function in `agent/dispatcher.lua`
+2. Add the MCP schema in `bridge/src/mcp-server.js`
 3. Add the tool name to the array in `bridge/src/protocol.js`
+
+---
+
+## License
+
+MIT — do whatever you want with it.

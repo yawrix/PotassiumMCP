@@ -1,22 +1,18 @@
 /**
  * PotassiumMCP — MCP Server
  * 
- * Exposes penetration testing tools as MCP (Model Context Protocol) tools
- * so that Antigravity can call them directly from the IDE chat.
+ * Exposes game security tools as MCP tools so your AI assistant
+ * can call them directly from the chat window.
  * 
- * Usage:
- *   node mcp-server.js --stdio
- *   
+ * Your AI client (VS Code, Cursor, etc.) starts this automatically.
+ * You never need to run it manually.
+ * 
  * Environment:
- *   POTASSIUM_WORKSPACE — Path to Potassium's workspace directory
- *   
- * This is configured in .gemini/antigravity/mcp_config.json alongside
- * the RobloxStudio MCP server.
+ *   POTASSIUM_WORKSPACE — Path to your executor's workspace directory
  */
 
 // CRITICAL: Redirect console.log to stderr BEFORE anything else.
 // MCP stdio transport uses stdout exclusively for JSON-RPC messages.
-// Any non-protocol output on stdout corrupts the handshake.
 const originalLog = console.log;
 console.log = (...args) => console.error(...args);
 
@@ -35,8 +31,18 @@ const __dirname = dirname(__filename);
 
 // ── Configuration ────────────────────────────────────────────
 
-const WORKSPACE_DIR = process.env.POTASSIUM_WORKSPACE
-  || 'C:\\Users\\devdo\\AppData\\Local\\Potassium\\workspace';
+const WORKSPACE_DIR = process.env.POTASSIUM_WORKSPACE;
+if (!WORKSPACE_DIR) {
+  console.error('');
+  console.error('  ✖ POTASSIUM_WORKSPACE environment variable is not set.');
+  console.error('');
+  console.error('  Set it in your MCP config to your executor\'s workspace path.');
+  console.error('  Example: C:\\Users\\YourName\\Documents\\Potassium\\workspace');
+  console.error('');
+  console.error('  See README.md for setup instructions.');
+  console.error('');
+  process.exit(1);
+}
 
 const configPath = join(__dirname, '..', '..', 'config', 'default.json');
 let config = { safety: {}, logging: { level: 'info' }, ipc: {} };
@@ -48,7 +54,7 @@ if (existsSync(configPath)) {
 
 const logDir = join(WORKSPACE_DIR, 'potassiumMCP', 'logs');
 const logger = new AuditLogger(logDir);
-logger.consoleLevel = 'error'; // Suppress console output in MCP mode (stdout is for protocol)
+logger.consoleLevel = 'error';
 
 const safety = new SafetyPolicy(config);
 const transport = new FileTransport(WORKSPACE_DIR, {

@@ -1,25 +1,16 @@
 --[[
-  PotassiumMCP — Interactive Agent Dispatcher v0.1.0
-  ===================================================
-  Runs inside Roblox via Potassium. Listens for commands from the
-  host-side bridge via file-based IPC and dispatches tool calls.
+  PotassiumMCP — In-Game Agent v1.0.0
+  https://github.com/yawrix/PotassiumMCP
   
-  HOW IT WORKS:
-  1. Bridge writes request JSON to: workspace/potassiumMCP/in/<id>.json
-  2. Agent polls the in/ directory, reads and deletes request files.
-  3. Agent executes the requested tool and writes response to out/<id>.json
-  4. Bridge reads the response file.
+  Runs inside Roblox via Potassium (or any sUNC executor).
+  Connects to your AI assistant through the MCP server.
   
-  HOW TO RUN:
-  1. Start the bridge on your PC:
-       node bridge/src/index.js --workspace <PotassiumWorkspacePath>
-  2. Join the target game in Roblox.
-  3. Execute this script in Potassium.
-  4. The agent will begin polling for commands.
+  USAGE:
+  1. Join your target game in Roblox
+  2. Paste this script into your executor and run it
+  3. Talk to your AI — it now has full access to the game
   
-  STOP: Execute getgenv()._pmcp_stop = true to gracefully stop.
-  
-  AUTHORIZATION REQUIRED: Only use on games with written permission.
+  STOP: getgenv()._pmcp_stop = true
 ]]
 
 -- ============================================================================
@@ -27,12 +18,12 @@
 -- ============================================================================
 
 local CONFIG = {
-    VERSION = "0.1.0",
+    VERSION = "1.0.0",
     BASE_DIR = "potassiumMCP",
     IN_DIR = "potassiumMCP/in",
     OUT_DIR = "potassiumMCP/out",
     LOG_DIR = "potassiumMCP/logs",
-    POLL_INTERVAL = 0.25,  -- seconds
+    POLL_INTERVAL = 0.25,
     MAX_LOG_ENTRIES = 500,
 }
 
@@ -1612,7 +1603,7 @@ end
 
 -- Prevent multiple instances
 if getgenv()._pmcp_running then
-    warn("[PotassiumMCP] Agent is already running! Set getgenv()._pmcp_stop = true to stop it first.")
+    warn("[potassium] Already running — run getgenv()._pmcp_stop = true first")
     return
 end
 
@@ -1621,20 +1612,24 @@ getgenv()._pmcp_stop = false
 
 ensure_dirs()
 
+local game_name = safe(function() return game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name end) or "Unknown Game"
+
 print("")
-print("═══════════════════════════════════════════")
-print("  PotassiumMCP Agent v" .. CONFIG.VERSION)
-print("  AUTHORIZED TESTING ONLY")
-print("═══════════════════════════════════════════")
-print("  Polling: " .. CONFIG.IN_DIR)
-print("  Output:  " .. CONFIG.OUT_DIR)
-print("  Stop:    getgenv()._pmcp_stop = true")
-print("═══════════════════════════════════════════")
+print(" ╔══════════════════════════════════════════╗")
+print(" ║       ⚗️ PotassiumMCP v" .. CONFIG.VERSION .. "              ║")
+print(" ╠══════════════════════════════════════════╣")
+print(" ║  Status:  Connected                      ║")
+print(" ║  Game:    " .. game_name:sub(1, 29) .. string.rep(" ", math.max(0, 29 - #game_name:sub(1, 29))) .. "  ║")
+print(" ║  Tools:   21 loaded                      ║")
+print(" ╠══════════════════════════════════════════╣")
+print(" ║  Your AI assistant is ready.             ║")
+print(" ║  Stop: getgenv()._pmcp_stop = true       ║")
+print(" ╚══════════════════════════════════════════╝")
 print("")
 
-log("info", "agent", "Agent started — waiting for commands")
+log("info", "agent", "Connected — waiting for commands")
 
--- Write a heartbeat file so the bridge knows we're alive
+-- Write status so the bridge knows we're alive
 pcall(function()
     writefile(CONFIG.BASE_DIR .. "/agent_status.json", json_encode({
         status = "running",
@@ -1645,7 +1640,7 @@ pcall(function()
     }))
 end)
 
--- Main polling loop
+-- Main loop
 while not getgenv()._pmcp_stop do
     poll_once()
     task.wait(CONFIG.POLL_INTERVAL)
@@ -1653,8 +1648,8 @@ end
 
 -- Cleanup
 getgenv()._pmcp_running = false
-log("info", "agent", "Agent stopped gracefully")
-print("[PotassiumMCP] Agent stopped.")
+log("info", "agent", "Disconnected")
+print("[potassium] Disconnected.")
 
 pcall(function()
     writefile(CONFIG.BASE_DIR .. "/agent_status.json", json_encode({
