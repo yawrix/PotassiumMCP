@@ -30,46 +30,31 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // ── Configuration ────────────────────────────────────────────
-import { homedir } from 'node:os';
 
-// ── Workspace auto-detection ─────────────────────────────────
-// Tries to find the executor workspace automatically so most
-// users never need to set POTASSIUM_WORKSPACE manually.
-
-function detectWorkspace() {
-  // 1. Explicit env var always wins
-  if (process.env.POTASSIUM_WORKSPACE) {
-    return process.env.POTASSIUM_WORKSPACE;
-  }
-
-  const home = homedir();
+function autoDetectWorkspace() {
+  const home = process.env.USERPROFILE || process.env.HOME || '';
   const candidates = [
-    // Potassium default
-    join(home, 'AppData', 'Local', 'Potassium', 'workspace'),
-    // Common executor workspace locations
     join(home, 'Documents', 'Potassium', 'workspace'),
-    join(home, 'AppData', 'Local', 'Potassium'),
-    // Fallback: check if workspace exists at project root
-    join(__dirname, '..', '..', 'workspace'),
+    join(home, 'AppData', 'Local', 'Potassium', 'workspace'),
+    join(home, 'Desktop', 'Potassium', 'workspace'),
+    join(home, '.potassium', 'workspace'),
   ];
-
   for (const dir of candidates) {
     if (existsSync(dir)) {
       console.error(`  ✔ Auto-detected workspace: ${dir}`);
       return dir;
     }
   }
-
   return null;
 }
 
-const WORKSPACE_DIR = detectWorkspace();
+const WORKSPACE_DIR = process.env.POTASSIUM_WORKSPACE || autoDetectWorkspace();
 if (!WORKSPACE_DIR) {
   console.error('');
   console.error('  ✖ Could not find your executor workspace.');
   console.error('');
   console.error('  Set POTASSIUM_WORKSPACE in your MCP config:');
-  console.error(`  Example: ${join(homedir(), 'AppData', 'Local', 'Potassium', 'workspace')}`);
+  console.error('  Example: C:\\Users\\YourName\\Documents\\Potassium\\workspace');
   console.error('');
   console.error('  See README.md for setup instructions.');
   console.error('');
@@ -129,9 +114,52 @@ async function callTool(method, params = {}) {
 
 // ── Create MCP Server ────────────────────────────────────────
 
+const SERVER_INSTRUCTIONS = `You are connected to a live Roblox game through PotassiumMCP. You have 21 tools that let you interact with the game directly. The in-game agent (dispatcher.lua) must be running in the player's executor for tools to work.
+
+IMPORTANT: Use the MCP tools below. Do NOT try to write files, create scripts manually, or use any other method. The tools handle everything.
+
+## Workflow for testing a game
+
+1. RECON — Understand the game
+   - scan_remotes: find all RemoteEvents/Functions
+   - search_scripts: find scripts related to economy, shops, trading
+   - get_game_info: identify the game
+   - detect_anticheat: assess risk before testing
+
+2. ANALYZE — Read the code
+   - decompile_script: get full source of any script
+   - Look for FireServer calls — these are the attack surface
+   - get_upvalues / get_environment: find hidden state and constants
+
+3. TEST — Try to exploit
+   - fire_signal FIRST if the game requires opening a shop/menu
+   - fuzz_remote: blast a remote with 13 malicious payloads (price=0, -1, MAX_INT, NaN, etc.)
+   - call_remote: targeted tests with specific arguments
+   - snapshot_diff: measure before/after state changes
+
+4. CUSTOM — For anything else
+   - execute_lua: run arbitrary Lua code in the game context
+   - Use "return {...}" in your code to get data back
+
+## Tool reference
+
+RECON: scan_remotes, search_scripts, find_instances, inspect_instance, get_game_info, get_connections
+ANALYSIS: decompile_script, get_upvalues, get_environment, detect_anticheat
+MONITORING: spy_remotes, http_spy, monitor_changes
+TESTING: call_remote, fuzz_remote, execute_probe, snapshot_state, snapshot_diff
+EXPLOIT: fire_signal, execute_lua, read_log
+
+## Tips
+- Instance paths use dots: "ReplicatedStorage.Remotes.BuyItem"
+- fire_signal simulates UI clicks (open shops) before testing purchase remotes
+- fuzz_remote auto-diffs leaderstats — look for "ECONOMY CHANGE DETECTED"
+- execute_lua is the nuclear option — write any Lua for game-specific situations
+- Always start with recon. Understand the game before testing.`;
+
 const server = new McpServer({
   name: 'PotassiumMCP',
-  version: '0.1.0',
+  version: '1.0.0',
+  instructions: SERVER_INSTRUCTIONS,
 });
 
 // ── Tool: scan_remotes ───────────────────────────────────────
