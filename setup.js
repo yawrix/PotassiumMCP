@@ -119,17 +119,38 @@ async function main() {
     join(vscodeDir, 'mcp.json'),
     JSON.stringify(vscodeMcp, null, 2)
   );
-  success('Created .vscode/mcp.json');
+  success('Created .vscode/mcp.json (VS Code / Copilot)');
+
+  // Generate Cursor config
+  const cursorDir = join(PROJECT_ROOT, '.cursor');
+  if (!existsSync(cursorDir)) mkdirSync(cursorDir, { recursive: true });
+
+  const cursorMcp = {
+    mcpServers: {
+      PotassiumMCP: {
+        command: 'node',
+        args: [serverPath],
+        env: {
+          POTASSIUM_WORKSPACE: workspace
+        }
+      }
+    }
+  };
+
+  writeFileSync(
+    join(cursorDir, 'mcp.json'),
+    JSON.stringify(cursorMcp, null, 2)
+  );
+  success('Created .cursor/mcp.json (Cursor)');
 
   // Show config for other editors
   header('Step 4: You\'re ready!');
   console.log('');
-  log('VS Code / Copilot:');
-  log('  Already configured! Just open this folder in VS Code.');
-  log('  The MCP server will start automatically when you chat.');
+  log('VS Code / Copilot:  ✔ Configured automatically');
+  log('Cursor:             ✔ Configured automatically');
   console.log('');
-  log('Cursor:');
-  log('  Go to Settings → MCP Servers → Add, paste this:');
+  log('Claude Desktop / Codex / Other:');
+  log('  Add this to your MCP config file:');
   console.log('');
   console.log(`  {`);
   console.log(`    "PotassiumMCP": {`);
@@ -138,17 +159,6 @@ async function main() {
   console.log(`      "env": {`);
   console.log(`        "POTASSIUM_WORKSPACE": "${escapedWorkspace}"`);
   console.log(`      }`);
-  console.log(`    }`);
-  console.log(`  }`);
-  console.log('');
-  log('Claude Desktop:');
-  log('  Add to your claude_desktop_config.json:');
-  console.log('');
-  console.log(`  "PotassiumMCP": {`);
-  console.log(`    "command": "node",`);
-  console.log(`    "args": ["${escapedServer}"],`);
-  console.log(`    "env": {`);
-  console.log(`      "POTASSIUM_WORKSPACE": "${escapedWorkspace}"`);
   console.log(`    }`);
   console.log(`  }`);
   console.log('');

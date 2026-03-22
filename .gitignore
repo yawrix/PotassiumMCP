@@ -21,8 +21,7 @@ logs/
 Thumbs.db
 .DS_Store
 
-# Editor
-.vscode/
+# Editor (keep .vscode/ and .cursor/ — they contain MCP configs)
 .idea/
 *.swp
 *.swo

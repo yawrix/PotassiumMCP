@@ -46,9 +46,18 @@ The setup script will:
 
 **That's the entire install.** One command.
 
-### Step 2: VS Code users — you're already done
+### Step 2: Open in your editor
 
-If you use VS Code with GitHub Copilot, just open the PotassiumMCP folder. The `.vscode/mcp.json` is pre-configured — the MCP server activates automatically when you chat.
+The repo ships with pre-configured MCP configs:
+
+| Editor | Config file | What to do |
+|---|---|---|
+| **VS Code** (Copilot) | `.vscode/mcp.json` | Just open the folder — it works |
+| **Cursor** | `.cursor/mcp.json` | Just open the folder — it works |
+| **Claude Desktop** | — | `setup.js` prints the config to paste |
+| **Codex / Other** | — | `setup.js` prints the config to paste |
+
+If you ran `node setup.js`, it already configured everything for your editor.
 
 ### Step 3: Run it
 
