@@ -341,7 +341,7 @@ function tools.call_remote(params)
             elapsed_ms = math.floor((os.clock() - start) * 1000),
         }
     elseif class == "RemoteFunction" then
-        local timeout_ms = params.timeout_ms or 5000
+        local _timeout_ms = params.timeout_ms or 5000
         local ok, response = pcall(function()
             return instance:InvokeServer(unpack(args))
         end)

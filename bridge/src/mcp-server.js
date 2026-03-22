@@ -30,14 +30,46 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // ── Configuration ────────────────────────────────────────────
+import { homedir } from 'node:os';
 
-const WORKSPACE_DIR = process.env.POTASSIUM_WORKSPACE;
+// ── Workspace auto-detection ─────────────────────────────────
+// Tries to find the executor workspace automatically so most
+// users never need to set POTASSIUM_WORKSPACE manually.
+
+function detectWorkspace() {
+  // 1. Explicit env var always wins
+  if (process.env.POTASSIUM_WORKSPACE) {
+    return process.env.POTASSIUM_WORKSPACE;
+  }
+
+  const home = homedir();
+  const candidates = [
+    // Potassium default
+    join(home, 'AppData', 'Local', 'Potassium', 'workspace'),
+    // Common executor workspace locations
+    join(home, 'Documents', 'Potassium', 'workspace'),
+    join(home, 'AppData', 'Local', 'Potassium'),
+    // Fallback: check if workspace exists at project root
+    join(__dirname, '..', '..', 'workspace'),
+  ];
+
+  for (const dir of candidates) {
+    if (existsSync(dir)) {
+      console.error(`  ✔ Auto-detected workspace: ${dir}`);
+      return dir;
+    }
+  }
+
+  return null;
+}
+
+const WORKSPACE_DIR = detectWorkspace();
 if (!WORKSPACE_DIR) {
   console.error('');
-  console.error('  ✖ POTASSIUM_WORKSPACE environment variable is not set.');
+  console.error('  ✖ Could not find your executor workspace.');
   console.error('');
-  console.error('  Set it in your MCP config to your executor\'s workspace path.');
-  console.error('  Example: C:\\Users\\YourName\\Documents\\Potassium\\workspace');
+  console.error('  Set POTASSIUM_WORKSPACE in your MCP config:');
+  console.error(`  Example: ${join(homedir(), 'AppData', 'Local', 'Potassium', 'workspace')}`);
   console.error('');
   console.error('  See README.md for setup instructions.');
   console.error('');
