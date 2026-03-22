@@ -30,28 +30,38 @@ The toolkit works with any game. Your AI figures out the game's specific logic, 
 2. **[Node.js](https://nodejs.org)** v18 or newer
 3. **An MCP-compatible AI client** — VS Code with GitHub Copilot, Cursor, or similar
 
-### Step 1: Download
+### Step 1: Download and setup
 
 ```bash
 git clone https://github.com/yawrix/PotassiumMCP.git
 cd PotassiumMCP
+node setup.js
 ```
 
-### Step 2: Install dependencies
+The setup script will:
+- Install dependencies automatically
+- Find your executor's workspace directory
+- Generate the correct MCP config for your editor (VS Code, Cursor, or Claude Desktop)
+- Tell you exactly what to do next
 
-```bash
-cd bridge
-npm install
-cd ..
-```
+**That's the entire install.** One command.
 
-That's it for setup. No global installs, no build step.
+### Step 2: VS Code users — you're already done
 
-### Step 3: Connect your AI
+If you use VS Code with GitHub Copilot, just open the PotassiumMCP folder. The `.vscode/mcp.json` is pre-configured — the MCP server activates automatically when you chat.
 
-Your AI client needs to know about PotassiumMCP. Add this to your MCP configuration:
+### Step 3: Run it
 
-**VS Code** → Settings → search "MCP" → Edit in settings.json, or create `.vscode/mcp.json`:
+1. Open Roblox and join any game
+2. Paste `agent/dispatcher.lua` into your executor and run it
+3. Open your AI and start chatting. It has full access to the game.
+
+No background processes, no terminal windows. Your AI client launches the MCP server automatically.
+
+<details>
+<summary>Manual config (if setup.js doesn't work)</summary>
+
+**VS Code** → create `.vscode/mcp.json`:
 ```json
 {
   "servers": {
@@ -60,7 +70,7 @@ Your AI client needs to know about PotassiumMCP. Add this to your MCP configurat
       "command": "node",
       "args": ["bridge/src/mcp-server.js"],
       "env": {
-        "POTASSIUM_WORKSPACE": "C:\\Users\\YOUR_USERNAME\\Documents\\Potassium\\workspace"
+        "POTASSIUM_WORKSPACE": "C:\\Users\\YOUR_NAME\\Documents\\Potassium\\workspace"
       }
     }
   }
@@ -74,22 +84,15 @@ Your AI client needs to know about PotassiumMCP. Add this to your MCP configurat
     "command": "node",
     "args": ["C:/full/path/to/PotassiumMCP/bridge/src/mcp-server.js"],
     "env": {
-      "POTASSIUM_WORKSPACE": "C:\\Users\\YOUR_USERNAME\\Documents\\Potassium\\workspace"
+      "POTASSIUM_WORKSPACE": "C:\\Users\\YOUR_NAME\\Documents\\Potassium\\workspace"
     }
   }
 }
 ```
 
-> **Finding your workspace path:** Open Potassium, go to Settings, and look for the workspace/files directory. That's what you put in `POTASSIUM_WORKSPACE`. This is where the in-game agent and the MCP server exchange messages — both sides need to point to the same folder.
+> **Finding your workspace path:** Open your executor, go to Settings, and look for the workspace/files directory. That's what goes in `POTASSIUM_WORKSPACE`.
 
-### Step 4: Run it
-
-1. Open Roblox and join any game
-2. Open `agent/dispatcher.lua` in your executor
-3. Hit Execute — you'll see the connection banner
-4. Open your AI and start chatting. It has full access to the game.
-
-That's it. No background processes, no terminal windows to keep open. Your AI client launches the MCP server automatically behind the scenes.
+</details>
 
 ---
 
