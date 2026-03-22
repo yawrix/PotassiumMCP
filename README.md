@@ -19,7 +19,7 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
-- [Potassium](https://potassium.dev) executor (or any UNC-compatible executor)
+- [Potassium] Potassiumexecutor (or any sUNC-compatible executor)
 - [Node.js](https://nodejs.org) v18+
 - An MCP-compatible AI client (VS Code w/ GitHub Copilot, Cursor, etc.)
 
@@ -27,7 +27,7 @@
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/YOUR_USERNAME/potassiumMCP.git
+git clone https://github.com/yawrix/PotassiumMCP.git
 cd potassiumMCP
 
 # 2. Install bridge dependencies
@@ -158,7 +158,3 @@ Pull requests welcome. If you add a new tool:
 1. Add the Lua implementation in `agent/dispatcher.lua`
 2. Add the MCP definition with Zod schema in `bridge/src/mcp-server.js`
 3. Add the tool name to the array in `bridge/src/protocol.js`
-
----
-
-**Built with 🧠 by AI + Human collaboration.**
