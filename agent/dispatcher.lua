@@ -1637,20 +1637,20 @@ end
 -- Main entry
 -- ============================================================================
 
-if getgenv()._pmcp_running then
-    warn("[potassium] Already running — run getgenv()._pmcp_stop = true first")
+if getgenv()._s_run then
+    warn("[suncmcp] Already running — run getgenv()._s_stop = true first")
     return
 end
 
 -- Attempt to connect immediately. If it fails, give up (bridge should be running first)
 if not connect_websocket() then
-    warn("[potassium] Ensure your AI editor's MCP server is running first, then re-execute this script.")
+    warn("[suncmcp] Ensure your AI editor's MCP server is running first, then re-execute this script.")
     return
 end
 
-getgenv()._pmcp_running = true
-getgenv()._pmcp_stop = false
-getgenv()._pmcp_client_id = CONFIG.CLIENT_ID
+getgenv()._s_run = true
+getgenv()._s_stop = false
+getgenv()._s_id = CONFIG.CLIENT_ID
 
 local game_name = safe(function() return game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name end) or "Unknown Game"
 
@@ -1665,30 +1665,30 @@ print(" ║  Game:    " .. game_name:sub(1, 29) .. string.rep(" ", math.max(0, 2
 print(" ║  Tools:   21 loaded                      ║")
 print(" ╠══════════════════════════════════════════╣")
 print(" ║  Your AI assistant is ready.             ║")
-print(" ║  Stop: getgenv()._pmcp_stop = true       ║")
+print(" ║  Stop: getgenv()._s_stop = true       ║")
 print(" ╚══════════════════════════════════════════╝")
 print("")
 
 log("info", "agent", "Connected as " .. CONFIG.CLIENT_ID .. " — waiting for commands via WebSocket")
 
 -- Keep alive loop
-while not getgenv()._pmcp_stop do
+while not getgenv()._s_stop do
     task.wait(1)
     if not ws_connection then
         log("info", "agent", "WebSocket dropped. Attempting reconnect in 5 seconds...")
         task.wait(4)
-        if not getgenv()._pmcp_stop then
+        if not getgenv()._s_stop then
             connect_websocket()
         end
     end
 end
 
 -- Cleanup
-getgenv()._pmcp_running = false
+getgenv()._s_run = false
 if ws_connection then
     pcall(function() ws_connection:Close() end)
     ws_connection = nil
 end
 
 log("info", "agent", "Disconnected (" .. CONFIG.CLIENT_ID .. ")")
-print("[potassium] Disconnected (" .. CONFIG.CLIENT_ID .. ").")
+print("[suncmcp] Disconnected (" .. CONFIG.CLIENT_ID .. ").")
