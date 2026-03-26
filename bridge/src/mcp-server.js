@@ -394,7 +394,7 @@ clientTool('monitor_changes',
 clientTool('fire_signal',
   'Simulate a UI interaction by firing a signal (e.g. MouseButton1Click) on a GUI element. Use this to satisfy prerequisites — like opening a shop or clicking a button — before testing a remote. Uses Potassium\'s firesignal.',
   {
-    path: z.string().describe('Full Instance path to the GUI element, e.g. "Players.urwhack.PlayerGui.ScreenGui.shop.buyButton"'),
+    path: z.string().describe('Full Instance path to the GUI element, e.g. "Players.LocalPlayer.PlayerGui.ScreenGui.shop.buyButton"'),
     signal: z.string().optional().describe('Signal name to fire (default: "MouseButton1Click"). Others: "MouseButton2Click", "Activated", "MouseEnter"'),
     args: z.array(JsonValue).optional().describe('Arguments to pass to the signal'),
     wait_ms: z.number().optional().describe('Milliseconds to wait after firing (let game react). Default: 0'),
