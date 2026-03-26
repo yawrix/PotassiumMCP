@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * PotassiumMCP Setup Script
+ * sUNCMCP Setup Script
  * 
  * Run: node setup.js
  * 
@@ -33,7 +33,7 @@ function header(msg) { console.log(`\n  ${msg}\n  ${'─'.repeat(msg.length)}`);
 async function main() {
   console.log('');
   console.log('  ╔══════════════════════════════════════╗');
-  console.log('  ║     ⚗️  PotassiumMCP Setup           ║');
+  console.log('  ║     ⚗️  sUNCMCP Setup           ║');
   console.log('  ╚══════════════════════════════════════╝');
   console.log('');
 
@@ -66,7 +66,7 @@ async function main() {
 
   const vscodeMcp = {
     servers: {
-      PotassiumMCP: {
+      sUNCMCP: {
         type: 'stdio',
         command: 'node',
         args: [serverPath]
@@ -83,7 +83,7 @@ async function main() {
 
   const cursorMcp = {
     mcpServers: {
-      PotassiumMCP: {
+      sUNCMCP: {
         command: 'node',
         args: [serverPath]
       }
@@ -103,7 +103,7 @@ async function main() {
   log('add this to your MCP config:');
   console.log('');
   console.log(`  {`);
-  console.log(`    "PotassiumMCP": {`);
+  console.log(`    "sUNCMCP": {`);
   console.log(`      "command": "node",`);
   console.log(`      "args": ["${escapedServer}"]`);
   console.log(`    }`);

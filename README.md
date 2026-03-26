@@ -1,8 +1,8 @@
-# 🧪 PotassiumMCP
+# 🧪 sUNCMCP
 
 **Talk to your AI. It hacks the game.**
 
-PotassiumMCP securely connects any MCP-compatible AI directly to a live Roblox game using a **High-Performance WebSocket Architecture**. 21 built-in tools give your AI the ability to scan, decompile, fuzz, and exploit — all from a chat window. No programming required.
+sUNCMCP securely connects any MCP-compatible AI directly to a live Roblox game using a **High-Performance WebSocket Architecture**. 21 built-in tools give your AI the ability to scan, decompile, fuzz, and exploit — all from a chat window. No programming required.
 
 You bring the game. The AI does the rest.
 
@@ -10,7 +10,7 @@ You bring the game. The AI does the rest.
 
 ## 🚀 The Multi-Client WebSocket Update (v1.2.0)
 
-PotassiumMCP has been completely rewritten to run on a parallelized WebSocket engine (`ws://127.0.0.1:38741`), totally untethered from legacy FileSystem IPC methods.
+sUNCMCP has been completely rewritten to run on a parallelized WebSocket engine (`ws://127.0.0.1:38741`), totally untethered from legacy FileSystem IPC methods.
 
 - **Zero configuration:** No more `EXECUTOR_WORKSPACE` variables needed!
 - **Insane parallelization:** Unleash up to 500+ asynchronous attack threads dynamically hitting the game server without hanging your executor.
@@ -44,8 +44,8 @@ The toolkit works with any game. Your AI figures out the game's specific logic, 
 ## Quick start
 
 ```bash
-git clone https://github.com/yawrix/PotassiumMCP.git
-cd PotassiumMCP
+git clone https://github.com/yawrix/sUNCMCP.git
+cd sUNCMCP
 node setup.js
 ```
 
@@ -60,9 +60,9 @@ The setup script will:
 
 ## Connect your client
 
-PotassiumMCP uses **stdio transport** — your AI client starts the MCP server process automatically. 
+sUNCMCP uses **stdio transport** — your AI client starts the MCP server process automatically. 
 
-> **Note:** Replace `YOUR_USERNAME` with your actual system username and adjust the path to wherever you cloned PotassiumMCP.
+> **Note:** Replace `YOUR_USERNAME` with your actual system username and adjust the path to wherever you cloned sUNCMCP.
 
 ### JSON configuration
 
@@ -70,9 +70,9 @@ PotassiumMCP uses **stdio transport** — your AI client starts the MCP server p
 ```json
 {
   "mcpServers": {
-    "PotassiumMCP": {
+    "sUNCMCP": {
       "command": "node",
-      "args": ["C:\\Users\\YOUR_USERNAME\\Desktop\\PotassiumMCP\\bridge\\src\\mcp-server.js"]
+      "args": ["C:\\Users\\YOUR_USERNAME\\Desktop\\sUNCMCP\\bridge\\src\\mcp-server.js"]
     }
   }
 }
@@ -82,9 +82,9 @@ PotassiumMCP uses **stdio transport** — your AI client starts the MCP server p
 ```json
 {
   "mcpServers": {
-    "PotassiumMCP": {
+    "sUNCMCP": {
       "command": "node",
-      "args": ["/Users/YOUR_USERNAME/Desktop/PotassiumMCP/bridge/src/mcp-server.js"]
+      "args": ["/Users/YOUR_USERNAME/Desktop/sUNCMCP/bridge/src/mcp-server.js"]
     }
   }
 }
@@ -141,7 +141,7 @@ PotassiumMCP uses **stdio transport** — your AI client starts the MCP server p
 
 ## Compatibility
 
-PotassiumMCP works with any executor that supports sUNC (Semi-Unified Naming Convention). If your executor has the required globals below, it should work.
+sUNCMCP works with any executor that supports sUNC (Semi-Unified Naming Convention). If your executor has the required globals below, it should work.
 
 **Required globals:** `WebSocket.connect`, `hookmetamethod`, `firesignal`, `getgenv`, `decompile`, `getsenv`, `getscriptclosure`
 
@@ -157,7 +157,7 @@ PotassiumMCP works with any executor that supports sUNC (Semi-Unified Naming Con
 ```
 
 1. You ask your AI to do something ("scan all remotes in this game")
-2. Your AI calls a PotassiumMCP tool via MCP
+2. Your AI calls a sUNCMCP tool via MCP
 3. The MCP server delegates the JSON task through a persistent WebSocket loop (`ws://127.0.0.1:38741`)
 4. The dispatcher (running inside Roblox) rapidly absorbs the packet, invokes the engine threads, and immediately snaps back a result payload.
 5. The MCP server reads the result and translates it contextually back to your LLM.

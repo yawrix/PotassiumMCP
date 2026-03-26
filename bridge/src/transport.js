@@ -1,5 +1,5 @@
 /**
- * PotassiumMCP — WebSocket-based Multi-Client Transport
+ * sUNCMCP — WebSocket-based Multi-Client Transport
  * 
  * Runs a local WebSocket server. In-game Lua dispatchers connect
  * to it using sUNC's WebSocket.connect(). No filesystem dependency,

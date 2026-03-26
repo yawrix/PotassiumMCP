@@ -1,5 +1,5 @@
 /**
- * PotassiumMCP — MCP Server (Multi-Client, WebSocket Transport)
+ * sUNCMCP — MCP Server (Multi-Client, WebSocket Transport)
  * 
  * Exposes game security tools as MCP tools so your AI assistant
  * can call them directly from the chat window. Supports multiple
@@ -40,7 +40,7 @@ const WS_PORT = config.ipc?.ws_port ?? 38741;
 
 // Use a temp dir for logs since we no longer depend on executor workspace
 import { tmpdir } from 'node:os';
-const logDir = join(tmpdir(), 'potassiumMCP', 'logs');
+const logDir = join(tmpdir(), 'sUNCMCP', 'logs');
 const logger = new AuditLogger(logDir);
 logger.consoleLevel = 'error';
 
@@ -81,7 +81,7 @@ async function callTool(method, params = {}, clientId = null) {
   return response.result ?? response;
 }
 
-const SERVER_INSTRUCTIONS = `You are connected to live Roblox games through PotassiumMCP v1.2 with MULTI-CLIENT support via WebSocket. You have 23 tools that let you interact with games directly.
+const SERVER_INSTRUCTIONS = `You are connected to live Roblox games through sUNCMCP v1.2 with MULTI-CLIENT support via WebSocket. You have 23 tools that let you interact with games directly.
 
 ## Multi-Client Usage
 
@@ -133,7 +133,7 @@ MULTI-CLIENT: list_clients, broadcast_lua
 - Always start with recon. Understand the game before testing.`;
 
 const server = new McpServer({
-  name: 'PotassiumMCP',
+  name: 'sUNCMCP',
   version: '1.2.0',
   instructions: SERVER_INSTRUCTIONS,
 });

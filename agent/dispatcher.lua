@@ -1656,7 +1656,7 @@ local game_name = safe(function() return game:GetService("MarketplaceService"):G
 
 print("")
 print(" ╔══════════════════════════════════════════╗")
-print(" ║       ⚗️ PotassiumMCP v" .. CONFIG.VERSION .. "              ║")
+print(" ║       ⚗️ sUNCMCP v" .. CONFIG.VERSION .. "              ║")
 print(" ╠══════════════════════════════════════════╣")
 print(" ║  Transport: WebSocket (38741)            ║")
 print(" ║  Status:  Connected                      ║")
