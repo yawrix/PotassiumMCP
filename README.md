@@ -1,4 +1,4 @@
-# 🧪 sUNCMCP
+# 🧪 sUNCMCP — The World's FIRST Universal Roblox Exploit MCP
 
 **Talk to your AI. It hacks the game.**
 
